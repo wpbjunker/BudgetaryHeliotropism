@@ -1,3 +1,9 @@
+.DS_Store
+*.zip
+*.txt
+*.csv
+*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
