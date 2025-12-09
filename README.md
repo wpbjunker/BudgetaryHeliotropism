@@ -21,15 +21,46 @@ Understanding how the Sun works, how it interacts with geological and human syst
 By analyzing the relationship between research funding and solar activity, we can gain an understanding of how decision-making processes behind that funding might take the study of solar activity into account. Serious consideration for the effects of solar activity on human development would likely display a positive correlation between solar activity and funding, as there is more data to acquire and process during the window around the solar maximum, and any predictive efforts would be focused on this period as well. Additionally, it's around the solar maximum that the effects of coronal mass ejections are most tangible, and the risk of geomagnetic storm damage most likely, so there may be more lobbying and greater awareness of the need for improved preparedness during this time.
 
 
+
 ## 2. Hypothesis
-State your null and alternative hypotheses clearly and succinctly.
 
-Null:
+### Does NASA's Budget Follow the Solar Cycle?
 
-Alternative:
+Test Statistic: The difference between the Pearson correlation of relative budget change and relative sunspot change for NASA, and that for all other departments.
+
+Null: There is no difference in correlation of budget and solar activity between NASA and other departments.
+
+Alternative: NASA's budget is more positively correlated with solar activity than the total budget of all other departments.
+
 
 
 ## 3. Data Description
+*Solar Cycles*, NOAA Space Weather Prediction Center
+* Unit of Analysis: Observed and Expected solar cycle start and end dates
+* Description: 25 rows
+    - start_date: observed start of solar cycle
+    - end_date: observed end of solar cycle
+    - expected_start: expected start date of solar cycle, assuming a fixed 11-year cycle
+    - expected_end: expected end date of solar cycle, assuming a fixed 11-year cycle
+* Transformations:
+    - Converted all attributes to datetime
+
+
+*Sunspot Records*, NOAA Space Weather Prediction Center
+* Unit of Analysis: Mean sunspot number in a month of a US government fiscal year
+* Description: 3323 rows
+    - date: YYMMDD of observation
+    - ssn: mean number of observed sunspots
+    - cycle_obsv: numbered solar cycle, based on observation
+    - cycle_expc: numbered solar cycle, assuming a fixed 11-year cycle
+    - activity_expc: flag for 'high' or 'low' activity, assuming a fixed 11-year cycle
+* Transformations:
+    - Renamed time-tag to date, converted to datetime datatype
+    - Generated "observed" and "expected" cycle numbers
+    - Dropped rows from before the first solar cycle (Feburary 1755)
+    - Generated a gov_fiscal_year attribute to faciliate merging with budgetary data
+    - Generated activity_expc to label periods of where we would expect high or low solar activity
+
 
 *Historical NASA Budget Data: Total Budget*, The Planetary Society
 * Unit of Analysis: Nominal and inflation-adjusted real budget (in millions USD) of a federal organization wihtin a given government fiscal year
@@ -41,9 +72,14 @@ Alternative:
     - budget_real_yearly_delta: change in real budget, year over year
     - inflation_cuml: inflation adjustment value
     - departments_group: "NASA" or "Other"
+    - ssn: mean sunspot count
 * Transformations:
-    -
-    - **TODO**
+    - Cast budget data as float64
+    - Created start and end dates for the government fiscal year
+    - Merged in sunspot data on fiscal year
+    - Tracked the magnitude of sunspot count change 
+    - Dropped Space Race period outliers
+
 
 *Historical NASA Budget Data: NASA Science Divisions Budgets*, The Planetary Society
 * Unit of Analysis: Nominal and real budget (in millions USD) of divisions within NASA Science Directorate for a given government fiscal year
@@ -54,58 +90,52 @@ Alternative:
     - budget_real_yearly_delta: change in real budget, year over year
     - division: one of the four primary divisions of NASA Science Directorate, *Planetary Science*, *Astrophysics*, *Heliophysics*, or *Earth Science*
 * Transformations:
-    -
-    - **TODO**
+    - Cast budget data as float64
+    - Created start and end dates for the government fiscal year
+    - Merged in sunspot data on fiscal year
+    - Tracked the magnitude of sunspot count change 
 
-*Sunspot Records*, NOAA Space Weather Prediction Center
-* Unit of Analysis: Mean sunspot number, and ancillary values, in a month
-* Description: 3323 rows
-    - time-tag: YYMMDD of observation
-    - ssn: mean number of observed sunspots
-    - smoothed_ssn: running average of 'ssn' over several months
-    - observed_swpc_ssn: mean observed sunspots, observation conducted by NOAA SWPC
-    - smoothed_swpc_ssn: running average of the above over several months
-    - f10.7: solar radio flux value
-    - smoothed_f10.7: running average of the above
-* Transformations:
-    - Converted time-tag to datetime datatype
-    - 
-    - **TODO**
 
 
 ## 4. Methods
-Summarize how you analyzed the data:
-* The test statistic for your permutation test
-* How you simulated or resampled under the null hypothesis
-* The metric(s) for which you created bootstrap confidence intervals
-* Why the CLT does not apply to at least one metric
-
+* Permutation Test
+    - Test Statistic: The difference between the Pearson correlation of relative budget change and relative sunspot change for NASA, and that for all other departments.
+    - Values were swapped around without replacement using np.random.shuffle()
+* Uncertainty Test:
+    - Test Statistic: The correlation between inflation-adjusted NASA budgets and solar activity in the form of sunspot counts. 
+    - Values were sampled with replacement.
+    - The CLT doesn't apply because correlation has an infinite variance.
 
 
 
 ## 5. Results
-Present your main findings:
-* Key summary statistics and visualizations
-* Observed test statistic and p-value (if applicable)
-* Bootstrap confidence intervals for relevant metrics
-
-
-
-
-## 6. Uncertainty Estimation
-Discuss your resampling results:
-* How many resamples you used
-* What the bootstrap or randomization distributions looked like
-* How you interpret the interval estimates
-
+* Permutation Test:
+    - Observed Effect: NASA's budget changes have a correlation with solar activity 0.108 greater than that of all other departments.
+    - P-Value: 0.28
+    - Conclusion: We cannot reject the null that the relationship is random.
+* Uncertainty Test:
+    - Observed Effect: NASA's bugdet is correlated with sunspot counts with a coefficient of 0.00615
+    - 95% CI: the standard error is calculated to be virtually 0, meaning that the bounds of the confidence interval may as well be equal to the observed effect
+    - Conclusion: There is little doubt that there's practically no correlation between NASA's budget and solar activity.
 
 
 
 ## 7. Limitations
-Briefly note any limitations in data, assumptions, or methods, including sources of bias or missing data.
 
-The main limitation of the budget dataset is the lack of controls for external political factors. The inclusion of the 'president' attribute is likely an attempt by the Planetary Society to address this, but it appears insufficient. Military considerations have always been a major factor, if not primary factor, in determing federal allocations to NASA. This is clearly indicated by the massive spike in funding at the beginning of the period, the Space Race of the 1960s, when security concerns and national pride drove the US to compete with the USSR for dominance in space, before tapering off and flattening out following the end of the Apollo program. Extricating the influence of these political factors might be possible, but it would require an in-depth historical investigation outside the scope of this analysis.
+The main limitation of the budget dataset is the lack of controls for external political factors. The inclusion of the 'president' attribute is likely an attempt by the Planetary Society to address this, but it appears insufficient. Military considerations have always been a major factor, if not primary factor, in determing federal allocations to NASA. This is clearly indicated by the massive spike in funding at the beginning of the period, the Space Race of the 1960s, when security concerns and national pride drove the US to compete with the USSR for dominance in space, before tapering off and flattening out following the end of the Apollo program. This is why the first 11 years are removed from the analysis, but that's only a partial correction. Extricating the influence of these political factors might be possible, but it would require an in-depth historical investigation outside the scope of this analysis.
 
 
 ## 8. References
-List all datasets, tools, libraries, or papers you cited
+* Data
+    - Dreier, Casey. "Historical NASA Budget Data". The Planetary Society.
+    - FRED St Louis Inflation Index,	https://fred.stlouisfed.org/series/FPCPITOTLZGUSA
+    - sunspot count historical data	https://www.swpc.noaa.gov/products/solar-cycle-progression
+* Articles
+    - https://spaceplace.nasa.gov/solar-activity/en/
+    - https://assets.lloyds.com/assets/pdf-solar-storm-risk-to-the-north-american-electric-grid/1/pdf-Solar-Storm-Risk-to-the-North-American-Electric-Grid.pdf
+    - https://www.texastribune.org/2022/01/02/texas-winter-storm-final-death-toll-246/
+    - https://www.austintexas.gov/sites/default/files/files/HSEM/2021-Winter-Storm-Uri-AAR-Findings-Report.pdf
+    - https://www.texastribune.org/2021/02/18/texas-power-outages-ercot/
+    - https://www.loc.gov/collections/samuel-morse-papers/articles-and-essays/timeline/1840-1872/
+    - https://arpa-e.energy.gov/news-and-events/news-and-insights
+    - us-department-energy-announces-34-million-improve-reliability-resiliency-and-security-americas-power-grid#:~:text=The%20electric%20power%20distribution%20system,harming%20communities%20and%20disrupting%20livelihoods.
