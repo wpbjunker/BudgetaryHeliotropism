@@ -120,12 +120,12 @@ Alternative: NASA's budget is more positively correlated with solar activity tha
 
 
 
-## 7. Limitations
+## 6. Limitations
 
 The main limitation of the budget dataset is the lack of controls for external political factors. The inclusion of the 'president' attribute is likely an attempt by the Planetary Society to address this, but it appears insufficient. Military considerations have always been a major factor, if not primary factor, in determing federal allocations to NASA. This is clearly indicated by the massive spike in funding at the beginning of the period, the Space Race of the 1960s, when security concerns and national pride drove the US to compete with the USSR for dominance in space, before tapering off and flattening out following the end of the Apollo program. This is why the first 11 years are removed from the analysis, but that's only a partial correction. Extricating the influence of these political factors might be possible, but it would require an in-depth historical investigation outside the scope of this analysis.
 
 
-## 8. References
+## 7. References
 * Data
     - Dreier, Casey. "Historical NASA Budget Data". The Planetary Society.
     - FRED St Louis Inflation Index,	https://fred.stlouisfed.org/series/FPCPITOTLZGUSA
